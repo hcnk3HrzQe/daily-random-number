@@ -1,0 +1,31 @@
+name: Generate Daily Random Number
+
+on:
+  schedule:
+    - cron: "0 16 * * *"  # UTC 16:00 = Beijing 00:00
+  workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate random number
+        run: |
+          RANDOM_NUM=$(( RANDOM % 100 + 1 ))
+          TODAY=$(date -u +%Y-%m-%d)
+          echo "Date: $TODAY, Random: $RANDOM_NUM"
+          echo "{\"date\":\"$TODAY\",\"random\":$RANDOM_NUM}" > random.json
+
+      - name: Commit and push
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add random.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "更新随机数: $(date -u +%Y-%m-%d)"
+          git push
