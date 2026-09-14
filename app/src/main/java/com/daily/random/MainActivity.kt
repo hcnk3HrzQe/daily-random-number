@@ -37,10 +37,12 @@ class MainActivity : AppCompatActivity() {
         btnRefresh.setOnClickListener { autoFetch() }
 
         btnUpdate.setOnClickListener {
+            btnUpdate.isEnabled = false
+            tvUpdateStatus.text = "检查中..."
             UpdateManager(this).checkAndUpdate { msg ->
                 runOnUiThread {
                     tvUpdateStatus.text = msg
-                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                    btnUpdate.isEnabled = true
                 }
             }
         }
@@ -48,14 +50,14 @@ class MainActivity : AppCompatActivity() {
         btnClear.setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("清除缓存")
-                .setMessage("将清除本地缓存的随机数，下次开屏会重新拉取")
+                .setMessage("清除本地随机数缓存")
                 .setPositiveButton("确定") { _, _ ->
                     PrefManager(this).clear()
                     tvRandom.text = "无数据"
                     tvDate.text = "已清除"
                     tvOddEven.text = ""
                     tvUpdateStatus.text = ""
-                    Toast.makeText(this, "缓存已清除", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "已清除", Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton("取消", null)
                 .show()
