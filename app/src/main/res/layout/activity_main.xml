@@ -1,92 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#F5F5F5">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/purple_700"
+        android:background="#6200EE"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         android:elevation="4dp"
-        app:titleTextColor="@color/white"
-        app:title="每日随机数" />
+        app:title="每日随机数"
+        app:titleTextColor="@android:color/white"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="32dp">
-
-        <TextView
-            android:id="@+id/tvDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="--"
-            android:textColor="#666666"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/tvRandom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="--"
-            android:textColor="#000000"
-            android:textSize="72sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvOddEven"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text=""
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvUpdateStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text=""
-            android:textColor="#999999"
-            android:textSize="12sp" />
+        android:fillViewport="true">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <Button
-                android:id="@+id/btnRefresh"
-                android:layout_width="wrap_content"
+            <!-- 数字卡片 -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="刷新" />
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white"
+                xmlns:app="http://schemas.android.com/apk/res-auto">
 
-            <Button
-                android:id="@+id/btnUpdate"
-                android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="32dp">
+
+                    <TextView
+                        android:id="@+id/tvDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="暂无"
+                        android:textSize="14sp"
+                        android:textColor="#999999"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:id="@+id/tvRandom"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="96sp"
+                        android:textStyle="bold"
+                        android:textColor="#999999"/>
+
+                    <TextView
+                        android:id="@+id/tvOddEven"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textSize="20sp"
+                        android:textColor="#CCCCCC"
+                        android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 按钮区域 -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="检查更新"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="12dp">
+
+                <Button
+                    android:id="@+id/btnRefresh"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="刷新"
+                    android:layout_marginEnd="4dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+                <Button
+                    android:id="@+id/btnShare"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="分享"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+                <Button
+                    android:id="@+id/btnUpdate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="更新"
+                    android:layout_marginStart="4dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            </LinearLayout>
 
             <Button
                 android:id="@+id/btnClear"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="清除缓存"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                android:layout_marginBottom="8dp"
+                style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
+            <TextView
+                android:id="@+id/tvUpdateStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="12sp"
+                android:textColor="#AAAAAA"
+                android:gravity="center"/>
         </LinearLayout>
-
-    </LinearLayout>
-
+    </ScrollView>
 </LinearLayout>
