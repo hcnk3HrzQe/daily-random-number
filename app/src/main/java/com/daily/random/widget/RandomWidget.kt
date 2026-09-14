@@ -4,7 +4,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
-import android.util.Log
+import android.graphics.Color
 import android.widget.RemoteViews
 import com.daily.random.DailyRandomApp
 import com.daily.random.R
@@ -42,8 +42,16 @@ class RandomWidget : AppWidgetProvider() {
             if (num >= 0) {
                 views.setTextViewText(R.id.tvWidgetRandom, num.toString())
                 views.setTextViewText(R.id.tvWidgetDate, date)
-                views.setTextViewText(R.id.tvWidgetOddEven,
-                    if (num % 2 == 0) "双" else "单")
+
+                if (num % 2 == 0) {
+                    views.setTextColor(R.id.tvWidgetRandom, Color.parseColor("#4CAF50"))
+                    views.setTextViewText(R.id.tvWidgetOddEven, "双")
+                    views.setTextColor(R.id.tvWidgetOddEven, Color.parseColor("#4CAF50"))
+                } else {
+                    views.setTextColor(R.id.tvWidgetRandom, Color.parseColor("#F44336"))
+                    views.setTextViewText(R.id.tvWidgetOddEven, "单")
+                    views.setTextColor(R.id.tvWidgetOddEven, Color.parseColor("#F44336"))
+                }
             } else {
                 views.setTextViewText(R.id.tvWidgetRandom, "?")
                 views.setTextViewText(R.id.tvWidgetDate, "等待更新")
