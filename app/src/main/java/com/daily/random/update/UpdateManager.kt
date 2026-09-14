@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -31,7 +30,6 @@ class UpdateManager(private val context: Context) {
             try {
                 onResult("正在检查更新...")
 
-                // 获取最新 release
                 val req = Request.Builder()
                     .url("https://api.github.com/repos/hcnk3HrzQe/daily-random-number/releases/latest")
                     .build()
@@ -42,7 +40,6 @@ class UpdateManager(private val context: Context) {
                 }
 
                 val json = JSONObject(body)
-                val tagName = json.optString("tag_name", "")
                 val assets = json.getJSONArray("assets")
 
                 if (assets.length() == 0) {
@@ -53,7 +50,6 @@ class UpdateManager(private val context: Context) {
                 val apkUrl = assets.getJSONObject(0).getString("browser_download_url")
                 val apkName = assets.getJSONObject(0).getString("name")
 
-                // 提取版本号
                 val localVersion = getAppVersion()
                 val remoteVersion = extractVersion(apkName)
                 Log.d(DailyRandomApp.TAG, "本地版本: $localVersion, 远程: $remoteVersion")
@@ -63,7 +59,7 @@ class UpdateManager(private val context: Context) {
                     return@Thread
                 }
 
-                onResult("发现新版本，正在下载...")
+                onResult("发现新版本 v$remoteVersion，正在下载...")
                 downloadAndInstall(apkUrl, apkName, onResult)
 
             } catch (e: Exception) {
@@ -80,8 +76,7 @@ class UpdateManager(private val context: Context) {
     }
 
     private fun extractVersion(filename: String): String {
-        // DailyRandom-v1.1-build68-20260914.apk -> 1.1
-        val regex = Regex("v([\d.]+)")
+        val regex = Regex("""v([\d.]+)""")
         return regex.find(filename)?.groupValues?.get(1) ?: ""
     }
 
@@ -104,7 +99,6 @@ class UpdateManager(private val context: Context) {
         val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadId = dm.enqueue(request)
 
-        // 监听下载完成
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(ctx: Context, intent: Intent) {
                 val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
