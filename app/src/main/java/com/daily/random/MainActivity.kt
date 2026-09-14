@@ -1,17 +1,21 @@
 package com.daily.random
 
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.daily.random.data.PrefManager
 import com.daily.random.update.UpdateManager
 import com.daily.random.worker.FetchRandomWorker
+import com.google.android.material.appbar.MaterialToolbar
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,6 +28,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // 沉浸式状态栏
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.isAppearanceLightStatusBars = false
+        controller.isAppearanceLightNavigationBars = false
+
+        // 设置 Toolbar
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
 
         tvRandom = findViewById(R.id.tvRandom)
         tvDate = findViewById(R.id.tvDate)
@@ -111,12 +125,10 @@ class MainActivity : AppCompatActivity() {
             tvDate.text = if (date.isNotEmpty()) date else "暂无"
 
             if (num % 2 == 0) {
-                // 双数：绿色
                 tvRandom.setTextColor(Color.parseColor("#4CAF50"))
                 tvOddEven.text = "双"
                 tvOddEven.setTextColor(Color.parseColor("#4CAF50"))
             } else {
-                // 单数：红色
                 tvRandom.setTextColor(Color.parseColor("#F44336"))
                 tvOddEven.text = "单"
                 tvOddEven.setTextColor(Color.parseColor("#F44336"))
