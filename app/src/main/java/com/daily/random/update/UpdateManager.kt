@@ -15,6 +15,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class UpdateManager(private val context: Context) {
@@ -29,6 +32,16 @@ class UpdateManager(private val context: Context) {
     fun checkAndUpdate(onResult: (String) -> Unit) {
         Thread {
             try {
+                // 缓存：每天只检查一次
+                val prefs = context.getSharedPreferences("update_prefs", Context.MODE_PRIVATE)
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                val lastCheck = prefs.getString("last_check_date", "")
+
+                if (lastCheck == today) {
+                    onResult("今天已检查过，明天再来")
+                    return@Thread
+                }
+
                 onResult("正在检查...")
 
                 val url = "https://api.github.com/repos/hcnk3HrzQe/daily-random-number/releases/latest"
@@ -43,6 +56,11 @@ class UpdateManager(private val context: Context) {
                 val code = resp.code
                 Log.d(DailyRandomApp.TAG, "HTTP $code")
 
+                if (code == 403) {
+                    onResult("请求太频繁，请稍后再试")
+                    return@Thread
+                }
+
                 if (code != 200) {
                     onResult("检查失败: HTTP $code")
                     return@Thread
@@ -50,7 +68,7 @@ class UpdateManager(private val context: Context) {
 
                 val body = resp.body?.string()
                 if (body.isNullOrBlank()) {
-                    onResult("检查失败: 响应为空")
+                    onResult("响应为空")
                     return@Thread
                 }
 
@@ -68,6 +86,9 @@ class UpdateManager(private val context: Context) {
                 val localVersion = getAppVersion()
                 val remoteVersion = extractVersion(apkName)
                 Log.d(DailyRandomApp.TAG, "本地: v$localVersion 远程: v$remoteVersion")
+
+                // 记录今天已检查
+                prefs.edit().putString("last_check_date", today).apply()
 
                 if (remoteVersion.isNotEmpty() && remoteVersion <= localVersion) {
                     onResult("已是最新 v$localVersion")
