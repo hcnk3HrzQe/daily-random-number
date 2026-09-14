@@ -1,5 +1,6 @@
 package com.daily.random
 
+import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
@@ -57,6 +58,8 @@ class MainActivity : AppCompatActivity() {
                     tvDate.text = "已清除"
                     tvOddEven.text = ""
                     tvUpdateStatus.text = ""
+                    tvRandom.setTextColor(Color.BLACK)
+                    tvOddEven.setTextColor(Color.GRAY)
                     Toast.makeText(this, "已清除", Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton("取消", null)
@@ -102,10 +105,27 @@ class MainActivity : AppCompatActivity() {
         val prefs = PrefManager(this)
         val num = prefs.getRandomNumber()
         val date = prefs.getDate()
-        tvRandom.text = if (num >= 0) num.toString() else "无数据"
-        tvDate.text = if (date.isNotEmpty()) date else "暂无"
-        tvOddEven.text = if (num >= 0) {
-            if (num % 2 == 0) "双数 偶数" else "单数 奇数"
-        } else ""
+
+        if (num >= 0) {
+            tvRandom.text = num.toString()
+            tvDate.text = if (date.isNotEmpty()) date else "暂无"
+
+            if (num % 2 == 0) {
+                // 双数：绿色
+                tvRandom.setTextColor(Color.parseColor("#4CAF50"))
+                tvOddEven.text = "双"
+                tvOddEven.setTextColor(Color.parseColor("#4CAF50"))
+            } else {
+                // 单数：红色
+                tvRandom.setTextColor(Color.parseColor("#F44336"))
+                tvOddEven.text = "单"
+                tvOddEven.setTextColor(Color.parseColor("#F44336"))
+            }
+        } else {
+            tvRandom.text = "无数据"
+            tvRandom.setTextColor(Color.BLACK)
+            tvDate.text = "暂无"
+            tvOddEven.text = ""
+        }
     }
 }
