@@ -1,7 +1,6 @@
 package com.daily.random
 
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
@@ -23,19 +22,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvDate: TextView
     private lateinit var tvOddEven: TextView
     private lateinit var tvUpdateStatus: TextView
-    private var polling = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 沉浸式状态栏
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val controller = WindowInsetsControllerCompat(window, window.decorView)
         controller.isAppearanceLightStatusBars = false
         controller.isAppearanceLightNavigationBars = false
 
-        // 设置 Toolbar
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
@@ -47,9 +43,15 @@ class MainActivity : AppCompatActivity() {
         val btnClear = findViewById<Button>(R.id.btnClear)
         val btnUpdate = findViewById<Button>(R.id.btnUpdate)
 
-        autoFetch()
+        // 第一步：直接显示缓存，不转圈
+        refreshDisplay()
 
-        btnRefresh.setOnClickListener { autoFetch() }
+        // 第二步：后台静默拉取，有新数据就刷新
+        fetchInBackground()
+
+        btnRefresh.setOnClickListener {
+            fetchInBackground()
+        }
 
         btnUpdate.setOnClickListener {
             btnUpdate.isEnabled = false
@@ -81,38 +83,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun autoFetch() {
-        refreshDisplay()
+    private fun fetchInBackground() {
         val work = OneTimeWorkRequestBuilder<FetchRandomWorker>().build()
         WorkManager.getInstance(this).enqueue(work)
 
-        if (!polling) {
-            polling = true
-            tvRandom.text = "加载中..."
-            tvDate.text = ""
-            tvOddEven.text = ""
-            var count = 0
-            val checker = object : Runnable {
-                override fun run() {
-                    val prefs = PrefManager(this@MainActivity)
-                    val num = prefs.getRandomNumber()
-                    val ts = prefs.getTimestamp()
-                    if (num >= 0 && ts > 0) {
-                        refreshDisplay()
-                        polling = false
-                        return
-                    }
-                    count++
-                    if (count < 10) {
-                        tvRandom.postDelayed(this, 500)
-                    } else {
-                        refreshDisplay()
-                        polling = false
-                    }
-                }
-            }
-            tvRandom.postDelayed(checker, 500)
-        }
+        // 3 秒后刷新一次显示（如果 Worker 已更新数据）
+        tvRandom.postDelayed({ refreshDisplay() }, 3000)
     }
 
     private fun refreshDisplay() {
