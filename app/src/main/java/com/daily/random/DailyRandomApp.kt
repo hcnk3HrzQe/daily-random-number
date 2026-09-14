@@ -4,8 +4,6 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -24,11 +22,7 @@ class DailyRandomApp : Application() {
         super.onCreate()
         Log.d(TAG, "Application onCreate")
 
-        // 注册屏幕解锁监听（用于解锁时触发拉取）
-        val filter = IntentFilter(Intent.ACTION_USER_PRESENT)
-        registerReceiver(com.daily.random.receiver.ScreenReceiver(), filter)
-
-        // 启动定时任务（每 1 小时检查一次）
+        // 启动定时任务（每 1 小时检查一次，内部判断是否今天已拉取）
         val periodicWork = PeriodicWorkRequestBuilder<FetchRandomWorker>(
             1, TimeUnit.HOURS
         ).build()
@@ -39,7 +33,6 @@ class DailyRandomApp : Application() {
             periodicWork
         )
 
-        // 创建通知渠道（仅用于前台服务）
         createNotificationChannel()
     }
 
