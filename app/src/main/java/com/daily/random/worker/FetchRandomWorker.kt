@@ -27,7 +27,6 @@ class FetchRandomWorker(
                 val prefs = PrefManager(applicationContext)
                 val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
-                // 如果今天已经拉取过，跳过
                 if (prefs.getDate() == today && prefs.getRandomNumber() != -1) {
                     Log.d(DailyRandomApp.TAG, "今天已拉取，跳过")
                     return@withContext Result.success()
@@ -44,7 +43,6 @@ class FetchRandomWorker(
 
                     Log.d(DailyRandomApp.TAG, "拉取成功: date=$date, random=$random")
 
-                    // 更新小组件
                     withContext(Dispatchers.Main) {
                         RandomWidget.updateAll(applicationContext)
                     }
@@ -73,7 +71,6 @@ class FetchRandomWorker(
 
             val request = Request.Builder()
                 .url(url)
-                .cacheControl(okhttp3.CacheControl.Builder().noCache().build())
                 .build()
 
             val response = client.newCall(request).execute()
@@ -81,13 +78,11 @@ class FetchRandomWorker(
             Log.d(DailyRandomApp.TAG, "HTTP $code")
 
             if (code != 200) {
-                Log.e(DailyRandomApp.TAG, "HTTP错误: $code")
                 return null
             }
 
             val body = response.body?.string()
             if (body.isNullOrBlank()) {
-                Log.e(DailyRandomApp.TAG, "响应为空")
                 return null
             }
 
