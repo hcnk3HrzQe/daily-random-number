@@ -19,13 +19,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DailyRandom"
         android:requestLegacyExternalStorage="true"
-        tools:targetApi="34">
+        tools:targetApi="35">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:excludeFromRecents="true"
+            android:noHistory="true"
             android:taskAffinity=""
+            android:launchMode="singleInstance"
             android:theme="@style/Theme.DailyRandom">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
