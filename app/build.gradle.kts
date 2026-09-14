@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "com.daily.random"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.daily.random"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 3
-        versionName = "1.2"
+        targetSdk = 35
+        versionCode = 4
+        versionName = "1.3"
     }
 
     signingConfigs {
