@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -14,8 +15,7 @@
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         android:elevation="4dp"
         app:title="每日随机数"
-        app:titleTextColor="@android:color/white"
-        xmlns:app="http://schemas.android.com/apk/res-auto" />
+        app:titleTextColor="@android:color/white" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -35,8 +35,7 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="@android:color/white"
-                xmlns:app="http://schemas.android.com/apk/res-auto">
+                app:cardBackgroundColor="@android:color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
