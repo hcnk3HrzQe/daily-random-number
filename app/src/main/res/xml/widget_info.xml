@@ -3,7 +3,9 @@
     android:initialLayout="@layout/widget_random"
     android:minWidth="110dp"
     android:minHeight="40dp"
-    android:resizeMode="none"
+    android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen"
-    android:description="@string/widget_description" />
+    android:widgetResizeMode="horizontal|vertical"
+    android:description="@string/widget_description"
+    android:previewLayout="@layout/widget_random" />
