@@ -28,7 +28,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- 数字卡片 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -73,7 +72,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 按钮区域 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -87,17 +85,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="刷新"
-                    android:layout_marginEnd="4dp"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-
-                <Button
-                    android:id="@+id/btnShare"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="分享"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="4dp"
+                    android:layout_marginEnd="8dp"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
                 <Button
@@ -105,8 +93,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="更新"
-                    android:layout_marginStart="4dp"
+                    android:text="检查更新"
+                    android:layout_marginStart="8dp"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
             </LinearLayout>
 
