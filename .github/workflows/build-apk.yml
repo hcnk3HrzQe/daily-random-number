@@ -25,10 +25,10 @@ jobs:
       - name: Rename APK
         run: |
           TIMESTAMP=$(date +%Y%m%d)
-          cp app/build/outputs/apk/debug/app-debug.apk "app/build/outputs/apk/debug/每日随机数-${TIMESTAMP}.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "app/build/outputs/apk/debug/DailyRandom-${TIMESTAMP}.apk"
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
           name: Build ${{ github.run_number }}
-          files: app/build/outputs/apk/debug/每日随机数-*.apk
+          files: app/build/outputs/apk/debug/DailyRandom-*.apk
           generate_release_notes: true
