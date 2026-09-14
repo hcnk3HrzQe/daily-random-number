@@ -15,9 +15,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class UpdateManager(private val context: Context) {
@@ -29,30 +26,15 @@ class UpdateManager(private val context: Context) {
         .followSslRedirects(true)
         .build()
 
-    // 直接读 raw 文件，不用 GitHub API，无限流
     companion object {
         private const val VERSION_URL =
             "https://raw.githubusercontent.com/hcnk3HrzQe/daily-random-number/main/version.json"
-        private const val RELEASE_BASE =
-            "https://github.com/hcnk3HrzQe/daily-random-number/releases/download/"
     }
 
     fun checkAndUpdate(onResult: (String) -> Unit) {
         Thread {
             try {
-                // 每天只检查一次
-                val prefs = context.getSharedPreferences("update_prefs", Context.MODE_PRIVATE)
-                val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-                val lastCheck = prefs.getString("last_check_date", "")
-
-                if (lastCheck == today) {
-                    onResult("今天已检查过")
-                    return@Thread
-                }
-
-                onResult("正在检查...")
-
-                Log.d(DailyRandomApp.TAG, "检查更新: $VERSION_URL")
+                onResult("检查中...")
 
                 val req = Request.Builder()
                     .url(VERSION_URL)
@@ -61,7 +43,6 @@ class UpdateManager(private val context: Context) {
 
                 val resp = client.newCall(req).execute()
                 val code = resp.code
-                Log.d(DailyRandomApp.TAG, "HTTP $code")
 
                 if (code != 200) {
                     onResult("检查失败: HTTP $code")
@@ -74,36 +55,20 @@ class UpdateManager(private val context: Context) {
                     return@Thread
                 }
 
-                Log.d(DailyRandomApp.TAG, "version.json: $body")
-
                 val json = JSONObject(body)
                 val remoteVersion = json.optString("version", "")
                 val remoteVC = json.optInt("versionCode", 0)
                 val apkName = json.optString("apk", "")
 
-                val localVersion = getAppVersion()
                 val localVC = getAppVersionCode()
 
-                Log.d(DailyRandomApp.TAG, "本地: v$localVersion ($localVC) 远程: v$remoteVersion ($remoteVC)")
-
-                // 记录今天已检查
-                prefs.edit().putString("last_check_date", today).apply()
-
                 if (remoteVC <= localVC) {
-                    onResult("已是最新 v$localVersion")
+                    onResult("已是最新")
                     return@Thread
                 }
 
-                // 拼接下载链接
-                val tag = "v${apkName.substringAfter("build").substringBefore("-").let { "build$it" }}"
-                // 直接用 apkName 找 release
-                val apkUrl = RELEASE_BASE + "v" + apkName.substringAfter("build").replace("-.*".toRegex(), "") + "/" + apkName
-
-                // 更简单：直接用 GitHub 页面重定向
-                val downloadUrl = "https://github.com/hcnk3HrzQe/daily-random-number/releases/download/v" +
-                    apkName.substringAfter("build-").substringBefore("-") + "/" + apkName
-
-                Log.d(DailyRandomApp.TAG, "下载: $downloadUrl")
+                val tag = apkName.substringAfter("build-").substringBefore("-")
+                val downloadUrl = "https://github.com/hcnk3HrzQe/daily-random-number/releases/download/v$tag/$apkName"
 
                 onResult("发现 v$remoteVersion，下载中...")
                 downloadAndInstall(downloadUrl, apkName, onResult)
@@ -113,12 +78,6 @@ class UpdateManager(private val context: Context) {
                 onResult("检查失败: ${e.message}")
             }
         }.start()
-    }
-
-    private fun getAppVersion(): String {
-        return try {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
-        } catch (e: Exception) { "" }
     }
 
     private fun getAppVersionCode(): Int {
