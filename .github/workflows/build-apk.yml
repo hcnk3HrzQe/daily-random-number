@@ -25,9 +25,13 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Generate Gradle Wrapper
+      - name: Download Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.2
+          mkdir -p gradle/wrapper
+          curl -sL "https://services.gradle.org/distributions/gradle-8.2-bin.zip" -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp/gradle
+          /tmp/gradle/gradle-8.2/bin/gradle wrapper --gradle-version 8.2
+          rm -rf /tmp/gradle /tmp/gradle.zip
       
       - name: Build Debug APK
         run: ./gradlew assembleDebug
