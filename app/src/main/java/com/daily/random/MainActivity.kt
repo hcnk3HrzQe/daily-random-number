@@ -1,6 +1,5 @@
 package com.daily.random
 
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
@@ -23,13 +22,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvDate: TextView
     private lateinit var tvOddEven: TextView
     private lateinit var tvUpdateStatus: TextView
-    private lateinit var btnRefresh: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 沉浸式状态栏
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val controller = WindowInsetsControllerCompat(window, window.decorView)
         controller.isAppearanceLightStatusBars = false
@@ -42,34 +39,27 @@ class MainActivity : AppCompatActivity() {
         tvDate = findViewById(R.id.tvDate)
         tvOddEven = findViewById(R.id.tvOddEven)
         tvUpdateStatus = findViewById(R.id.tvUpdateStatus)
-        btnRefresh = findViewById(R.id.btnRefresh)
+        val btnRefresh = findViewById<Button>(R.id.btnRefresh)
         val btnClear = findViewById<Button>(R.id.btnClear)
         val btnUpdate = findViewById<Button>(R.id.btnUpdate)
-        val btnShare = findViewById<Button>(R.id.btnShare)
 
-        // 第一步：直接显示缓存
+        // 直接显示缓存
         refreshDisplay()
 
-        // 第二步：后台静默拉取
+        // 后台静默拉取
         fetchInBackground()
 
-        // 刷新按钮 - 真正拉取网络数据
+        // 刷新 - 强制拉取
         btnRefresh.setOnClickListener {
             tvRandom.text = "..."
             tvOddEven.text = ""
             val work = OneTimeWorkRequestBuilder<FetchRandomWorker>().build()
             WorkManager.getInstance(this).enqueue(work)
-            // 5 秒后刷新显示
             tvRandom.postDelayed({ refreshDisplay() }, 5000)
             Toast.makeText(this, "正在刷新...", Toast.LENGTH_SHORT).show()
         }
 
-        // 分享按钮
-        btnShare.setOnClickListener {
-            shareNumber()
-        }
-
-        // 检查更新
+        // 检查更新 - 强制检查
         btnUpdate.setOnClickListener {
             btnUpdate.isEnabled = false
             tvUpdateStatus.text = "检查中..."
@@ -99,21 +89,6 @@ class MainActivity : AppCompatActivity() {
                 .setNegativeButton("取消", null)
                 .show()
         }
-    }
-
-    private fun shareNumber() {
-        val num = PrefManager(this).getRandomNumber()
-        val date = PrefManager(this).getDate()
-        if (num < 0) {
-            Toast.makeText(this, "暂无数据", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val text = "今日随机数: $num ($date)\n来自「每日随机数」App"
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, text)
-        }
-        startActivity(Intent.createChooser(intent, "分享今日数字"))
     }
 
     private fun fetchInBackground() {
