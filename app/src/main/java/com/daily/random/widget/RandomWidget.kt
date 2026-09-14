@@ -28,31 +28,26 @@ class RandomWidget : AppWidgetProvider() {
             val mgr = AppWidgetManager.getInstance(context)
             val name = ComponentName(context, RandomWidget::class.java)
             val ids = mgr.getAppWidgetIds(name)
-            Log.d(DailyRandomApp.TAG, "更新小组件: ${ids.size}个")
             for (id in ids) {
                 updateOne(context, mgr, id)
             }
         }
 
-        private fun updateOne(
-            context: Context,
-            mgr: AppWidgetManager,
-            id: Int
-        ) {
+        private fun updateOne(context: Context, mgr: AppWidgetManager, id: Int) {
             val prefs = PrefManager(context)
             val views = RemoteViews(context.packageName, R.layout.widget_random)
-
             val num = prefs.getRandomNumber()
             val date = prefs.getDate()
-
-            Log.d(DailyRandomApp.TAG, "小组件显示: num=$num, date=$date")
 
             if (num >= 0) {
                 views.setTextViewText(R.id.tvWidgetRandom, num.toString())
                 views.setTextViewText(R.id.tvWidgetDate, date)
+                views.setTextViewText(R.id.tvWidgetOddEven,
+                    if (num % 2 == 0) "双" else "单")
             } else {
                 views.setTextViewText(R.id.tvWidgetRandom, "?")
                 views.setTextViewText(R.id.tvWidgetDate, "等待更新")
+                views.setTextViewText(R.id.tvWidgetOddEven, "")
             }
 
             mgr.updateAppWidget(id, views)
