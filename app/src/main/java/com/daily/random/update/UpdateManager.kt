@@ -24,42 +24,44 @@ class UpdateManager(private val context: Context) {
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
         .followRedirects(true)
         .followSslRedirects(true)
         .build()
 
+    // 直接读 raw 文件，不用 GitHub API，无限流
+    companion object {
+        private const val VERSION_URL =
+            "https://raw.githubusercontent.com/hcnk3HrzQe/daily-random-number/main/version.json"
+        private const val RELEASE_BASE =
+            "https://github.com/hcnk3HrzQe/daily-random-number/releases/download/"
+    }
+
     fun checkAndUpdate(onResult: (String) -> Unit) {
         Thread {
             try {
-                // 缓存：每天只检查一次
+                // 每天只检查一次
                 val prefs = context.getSharedPreferences("update_prefs", Context.MODE_PRIVATE)
                 val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                 val lastCheck = prefs.getString("last_check_date", "")
 
                 if (lastCheck == today) {
-                    onResult("今天已检查过，明天再来")
+                    onResult("今天已检查过")
                     return@Thread
                 }
 
                 onResult("正在检查...")
 
-                val url = "https://api.github.com/repos/hcnk3HrzQe/daily-random-number/releases/latest"
-                Log.d(DailyRandomApp.TAG, "检查更新: $url")
+                Log.d(DailyRandomApp.TAG, "检查更新: $VERSION_URL")
 
                 val req = Request.Builder()
-                    .url(url)
-                    .addHeader("Accept", "application/vnd.github.v3+json")
+                    .url(VERSION_URL)
+                    .addHeader("Cache-Control", "no-cache")
                     .build()
 
                 val resp = client.newCall(req).execute()
                 val code = resp.code
                 Log.d(DailyRandomApp.TAG, "HTTP $code")
-
-                if (code == 403) {
-                    onResult("请求太频繁，请稍后再试")
-                    return@Thread
-                }
 
                 if (code != 200) {
                     onResult("检查失败: HTTP $code")
@@ -72,31 +74,39 @@ class UpdateManager(private val context: Context) {
                     return@Thread
                 }
 
+                Log.d(DailyRandomApp.TAG, "version.json: $body")
+
                 val json = JSONObject(body)
-                val assets = json.getJSONArray("assets")
-
-                if (assets.length() == 0) {
-                    onResult("没有 APK")
-                    return@Thread
-                }
-
-                val apkUrl = assets.getJSONObject(0).getString("browser_download_url")
-                val apkName = assets.getJSONObject(0).getString("name")
+                val remoteVersion = json.optString("version", "")
+                val remoteVC = json.optInt("versionCode", 0)
+                val apkName = json.optString("apk", "")
 
                 val localVersion = getAppVersion()
-                val remoteVersion = extractVersion(apkName)
-                Log.d(DailyRandomApp.TAG, "本地: v$localVersion 远程: v$remoteVersion")
+                val localVC = getAppVersionCode()
+
+                Log.d(DailyRandomApp.TAG, "本地: v$localVersion ($localVC) 远程: v$remoteVersion ($remoteVC)")
 
                 // 记录今天已检查
                 prefs.edit().putString("last_check_date", today).apply()
 
-                if (remoteVersion.isNotEmpty() && remoteVersion <= localVersion) {
+                if (remoteVC <= localVC) {
                     onResult("已是最新 v$localVersion")
                     return@Thread
                 }
 
+                // 拼接下载链接
+                val tag = "v${apkName.substringAfter("build").substringBefore("-").let { "build$it" }}"
+                // 直接用 apkName 找 release
+                val apkUrl = RELEASE_BASE + "v" + apkName.substringAfter("build").replace("-.*".toRegex(), "") + "/" + apkName
+
+                // 更简单：直接用 GitHub 页面重定向
+                val downloadUrl = "https://github.com/hcnk3HrzQe/daily-random-number/releases/download/v" +
+                    apkName.substringAfter("build-").substringBefore("-") + "/" + apkName
+
+                Log.d(DailyRandomApp.TAG, "下载: $downloadUrl")
+
                 onResult("发现 v$remoteVersion，下载中...")
-                downloadAndInstall(apkUrl, apkName, onResult)
+                downloadAndInstall(downloadUrl, apkName, onResult)
 
             } catch (e: Exception) {
                 Log.e(DailyRandomApp.TAG, "检查更新异常", e)
@@ -111,9 +121,15 @@ class UpdateManager(private val context: Context) {
         } catch (e: Exception) { "" }
     }
 
-    private fun extractVersion(filename: String): String {
-        val regex = Regex("""v([\d.]+)""")
-        return regex.find(filename)?.groupValues?.get(1) ?: ""
+    private fun getAppVersionCode(): Int {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode.toInt()
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+            }
+        } catch (e: Exception) { 0 }
     }
 
     private fun downloadAndInstall(url: String, filename: String, onResult: (String) -> Unit) {
