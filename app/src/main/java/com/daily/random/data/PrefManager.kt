@@ -32,6 +32,10 @@ class PrefManager(context: Context) {
         return prefs.getLong(KEY_TS, 0L)
     }
 
+    fun clear() {
+        prefs.edit().clear().apply()
+    }
+
     companion object {
         private const val PREFS_NAME = "daily_random_prefs"
         private const val KEY_RANDOM = "random_number"
