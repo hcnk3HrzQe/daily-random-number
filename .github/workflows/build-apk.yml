@@ -25,7 +25,7 @@ jobs:
       - name: Rename APK
         run: |
           VERSION=$(grep "versionName" app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
-          VC=$(grep "versionCode" app/build.gradle.kts | grep -o '[0-9]*')
+          VC=$(grep "versionCode" app/build.gradle.kts | grep -o "[0-9]*")
           BUILD=${{ github.run_number }}
           TIMESTAMP=$(date +%Y%m%d)
           FILENAME="DailyRandom-v${VERSION}-build${BUILD}-${TIMESTAMP}.apk"
@@ -35,7 +35,7 @@ jobs:
           echo "FILENAME=$FILENAME" >> $GITHUB_ENV
       - name: Update version.json
         run: |
-          echo "{\"version\":\"$VERSION\",\"versionCode\":$VC,\"apk\":\"$FILENAME\"}" > version.json
+          echo "{\"version\":\"${VERSION}\",\"versionCode\":${VC},\"apk\":\"${FILENAME}\"}" > version.json
           cat version.json
       - uses: softprops/action-gh-release@v2
         with:
