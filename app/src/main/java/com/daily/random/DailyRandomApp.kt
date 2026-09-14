@@ -16,13 +16,13 @@ class DailyRandomApp : Application() {
 
     companion object {
         const val TAG = "DailyRandom"
+        const val CHANNEL_ID = "daily_random"
     }
 
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Application onCreate")
 
-        // 启动定时任务（每 1 小时检查一次，内部判断是否今天已拉取）
         val periodicWork = PeriodicWorkRequestBuilder<FetchRandomWorker>(
             1, TimeUnit.HOURS
         ).build()
@@ -39,7 +39,7 @@ class DailyRandomApp : Application() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                "daily_random",
+                CHANNEL_ID,
                 "每日随机数",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
