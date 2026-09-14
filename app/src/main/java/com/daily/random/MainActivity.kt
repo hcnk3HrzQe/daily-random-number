@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.daily.random.data.PrefManager
+import com.daily.random.update.UpdateManager
 import com.daily.random.worker.FetchRandomWorker
 
 class MainActivity : AppCompatActivity() {
@@ -16,6 +17,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvRandom: TextView
     private lateinit var tvDate: TextView
     private lateinit var tvOddEven: TextView
+    private lateinit var tvUpdateStatus: TextView
     private var polling = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,13 +27,22 @@ class MainActivity : AppCompatActivity() {
         tvRandom = findViewById(R.id.tvRandom)
         tvDate = findViewById(R.id.tvDate)
         tvOddEven = findViewById(R.id.tvOddEven)
+        tvUpdateStatus = findViewById(R.id.tvUpdateStatus)
         val btnRefresh = findViewById<Button>(R.id.btnRefresh)
         val btnClear = findViewById<Button>(R.id.btnClear)
+        val btnUpdate = findViewById<Button>(R.id.btnUpdate)
 
         autoFetch()
 
-        btnRefresh.setOnClickListener {
-            autoFetch()
+        btnRefresh.setOnClickListener { autoFetch() }
+
+        btnUpdate.setOnClickListener {
+            UpdateManager(this).checkAndUpdate { msg ->
+                runOnUiThread {
+                    tvUpdateStatus.text = msg
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         btnClear.setOnClickListener {
@@ -43,6 +54,7 @@ class MainActivity : AppCompatActivity() {
                     tvRandom.text = "无数据"
                     tvDate.text = "已清除"
                     tvOddEven.text = ""
+                    tvUpdateStatus.text = ""
                     Toast.makeText(this, "缓存已清除", Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton("取消", null)
