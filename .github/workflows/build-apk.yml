@@ -24,11 +24,15 @@ jobs:
       - run: gradle assembleDebug
       - name: Rename APK
         run: |
+          VERSION=$(grep "versionName" app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
+          BUILD=${{ github.run_number }}
           TIMESTAMP=$(date +%Y%m%d)
-          cp app/build/outputs/apk/debug/app-debug.apk "app/build/outputs/apk/debug/DailyRandom-${TIMESTAMP}.apk"
+          FILENAME="DailyRandom-v${VERSION}-build${BUILD}-${TIMESTAMP}.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "app/build/outputs/apk/debug/${FILENAME}"
+          echo "APK_NAME=${FILENAME}" >> $GITHUB_ENV
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: build-${{ github.run_number }}
-          name: Build ${{ github.run_number }}
+          tag_name: v${{ github.run_number }}
+          name: DailyRandom v${{ github.run_number }}
           files: app/build/outputs/apk/debug/DailyRandom-*.apk
           generate_release_notes: true
