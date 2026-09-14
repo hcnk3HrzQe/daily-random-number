@@ -6,6 +6,5 @@
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen"
-    android:widgetResizeMode="horizontal|vertical"
     android:description="@string/widget_description"
     android:previewLayout="@layout/widget_random" />
