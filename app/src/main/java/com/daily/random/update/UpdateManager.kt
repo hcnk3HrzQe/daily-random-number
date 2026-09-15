@@ -1,13 +1,8 @@
 package com.daily.random.update
 
-import android.app.DownloadManager
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.util.Log
 import androidx.core.content.FileProvider
 import com.daily.random.DailyRandomApp
@@ -15,13 +10,14 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 
-class UpdateManager(private val context: Context) {
+class UpdateManager(private val val context: android.content.Context) {
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
         .followRedirects(true)
         .followSslRedirects(true)
         .build()
@@ -71,7 +67,7 @@ class UpdateManager(private val context: Context) {
                 val downloadUrl = "https://github.com/hcnk3HrzQe/daily-random-number/releases/download/v$tag/$apkName"
 
                 onResult("发现 v$remoteVersion，下载中...")
-                downloadAndInstall(downloadUrl, apkName, onResult)
+                downloadApk(downloadUrl, apkName, onResult)
 
             } catch (e: Exception) {
                 Log.e(DailyRandomApp.TAG, "检查更新异常", e)
@@ -91,45 +87,52 @@ class UpdateManager(private val context: Context) {
         } catch (e: Exception) { 0 }
     }
 
-    private fun downloadAndInstall(url: String, filename: String, onResult: (String) -> Unit) {
+    private fun downloadApk(url: String, filename: String, onResult: (String) -> Unit) {
         try {
-            val downloadDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-            } else {
-                @Suppress("DEPRECATION")
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            }
+            val downloadDir = File(context.filesDir, "updates")
+            if (!downloadDir.exists()) downloadDir.mkdirs()
+
             val file = File(downloadDir, filename)
             if (file.exists()) file.delete()
 
-            val request = DownloadManager.Request(Uri.parse(url))
-                .setTitle("下载更新")
-                .setDescription(filename)
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationUri(Uri.fromFile(file))
-                .setAllowedOverMetered(true)
-                .setAllowedOverRoaming(true)
+            val request = Request.Builder().url(url).build()
+            val response = client.newCall(request).execute()
 
-            val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            val downloadId = dm.enqueue(request)
+            if (response.code != 200) {
+                onResult("下载失败: HTTP ${response.code}")
+                return
+            }
 
-            val receiver = object : BroadcastReceiver() {
-                override fun onReceive(ctx: Context, intent: Intent) {
-                    val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-                    if (id == downloadId) {
-                        try { context.unregisterReceiver(this) } catch (_: Exception) {}
-                        installApk(file, onResult)
-                    }
+            val body = response.body ?: run {
+                onResult("下载失败: 响应为空")
+                return
+            }
+
+            val inputStream = body.byteStream()
+            val outputStream = FileOutputStream(file)
+            val buffer = ByteArray(8192)
+            var bytesRead: Int
+            var totalRead = 0L
+            val totalSize = body.contentLength()
+
+            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+                totalRead += bytesRead
+                if (totalSize > 0) {
+                    val progress = (totalRead * 100 / totalSize).toInt()
+                    onResult("下载中... $progress%")
                 }
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_NOT_EXPORTED)
-            } else {
-                context.registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
-            }
+            outputStream.flush()
+            outputStream.close()
+            inputStream.close()
+
+            onResult("下载完成，安装中...")
+            installApk(file, onResult)
 
         } catch (e: Exception) {
+            Log.e(DailyRandomApp.TAG, "下载异常", e)
             onResult("下载失败: ${e.message}")
         }
     }
