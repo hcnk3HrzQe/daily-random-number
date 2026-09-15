@@ -46,10 +46,10 @@ class MainActivity : AppCompatActivity() {
         // 直接显示缓存
         refreshDisplay()
 
-        // 后台静默拉取
+        // 后台拉取（如果不匹配今天日期会自动拉取）
         fetchInBackground()
 
-        // 刷新 - 强制拉取
+        // 刷新
         btnRefresh.setOnClickListener {
             tvRandom.text = "..."
             tvOddEven.text = ""
@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "正在刷新...", Toast.LENGTH_SHORT).show()
         }
 
-        // 检查更新 - 强制检查
+        // 检查更新
         btnUpdate.setOnClickListener {
             btnUpdate.isEnabled = false
             tvUpdateStatus.text = "检查中..."
@@ -94,7 +94,8 @@ class MainActivity : AppCompatActivity() {
     private fun fetchInBackground() {
         val work = OneTimeWorkRequestBuilder<FetchRandomWorker>().build()
         WorkManager.getInstance(this).enqueue(work)
-        tvRandom.postDelayed({ refreshDisplay() }, 3000)
+        // 5秒后刷新显示（等Worker完成）
+        tvRandom.postDelayed({ refreshDisplay() }, 5000)
     }
 
     private fun refreshDisplay() {
