@@ -35,6 +35,9 @@ class FetchRandomWorker(
                 val prefs = PrefManager(applicationContext)
                 val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
+                Log.d(DailyRandomApp.TAG, "检查日期: 今天=$today, 缓存=${prefs.getDate()}")
+
+                // 如果今天已经拉取过，跳过
                 if (prefs.getDate() == today && prefs.getRandomNumber() != -1) {
                     Log.d(DailyRandomApp.TAG, "今天已拉取，跳过")
                     return@withContext Result.success()
