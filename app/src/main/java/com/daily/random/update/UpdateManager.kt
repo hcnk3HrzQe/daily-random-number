@@ -13,7 +13,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 
-class UpdateManager(private val val context: android.content.Context) {
+class UpdateManager(private val context: android.content.Context) {
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
