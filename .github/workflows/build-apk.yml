@@ -17,14 +17,16 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-      - uses: android-actions/setup-android@v3
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        accept-android-sdk-licenses: true
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.2"
       - run: gradle assembleDebug
       - name: Rename APK
         run: |
-          VERSION=$(grep "versionName" app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
+          VERSION=$(grep "versionName" app/build.gradle.kts | sed 's/.*"\(.*\)".*//')
           VC=$(grep "versionCode" app/build.gradle.kts | grep -o "[0-9]*")
           BUILD=${{ github.run_number }}
           TIMESTAMP=$(date +%Y%m%d)
