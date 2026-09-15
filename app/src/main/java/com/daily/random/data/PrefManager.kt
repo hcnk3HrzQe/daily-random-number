@@ -5,15 +5,23 @@ import android.content.SharedPreferences
 
 class PrefManager(context: Context) {
 
-    private val prefs: SharedPreferences =
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = context.getSharedPreferences(
+        "daily_random_prefs",
+        Context.MODE_PRIVATE
+    )
+
+    companion object {
+        private const val KEY_RANDOM_NUMBER = "random_number"
+        private const val KEY_DATE = "date"
+        private const val KEY_TIMESTAMP = "timestamp"
+    }
 
     fun saveRandomNumber(number: Int) {
-        prefs.edit().putInt(KEY_RANDOM, number).apply()
+        prefs.edit().putInt(KEY_RANDOM_NUMBER, number).apply()
     }
 
     fun getRandomNumber(): Int {
-        return prefs.getInt(KEY_RANDOM, -1)
+        return prefs.getInt(KEY_RANDOM_NUMBER, -1)
     }
 
     fun saveDate(date: String) {
@@ -24,22 +32,15 @@ class PrefManager(context: Context) {
         return prefs.getString(KEY_DATE, "") ?: ""
     }
 
-    fun saveTimestamp(ts: Long) {
-        prefs.edit().putLong(KEY_TS, ts).apply()
+    fun saveTimestamp(timestamp: Long) {
+        prefs.edit().putLong(KEY_TIMESTAMP, timestamp).apply()
     }
 
     fun getTimestamp(): Long {
-        return prefs.getLong(KEY_TS, 0L)
+        return prefs.getLong(KEY_TIMESTAMP, 0)
     }
 
     fun clear() {
         prefs.edit().clear().apply()
-    }
-
-    companion object {
-        private const val PREFS_NAME = "daily_random_prefs"
-        private const val KEY_RANDOM = "random_number"
-        private const val KEY_DATE = "fetch_date"
-        private const val KEY_TS = "fetch_timestamp"
     }
 }
