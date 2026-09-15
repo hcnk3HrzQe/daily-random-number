@@ -3,7 +3,7 @@ name: Generate Daily Random Number
 on:
   schedule:
     - cron: "0 16 * * *"  # UTC 16:00 = Beijing 00:00
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,8 +17,9 @@ jobs:
 
       - name: Generate random number
         run: |
+          export TZ='Asia/Shanghai'
           RANDOM_NUM=$(( RANDOM % 100 + 1 ))
-          TODAY=$(date -u +%Y-%m-%d)
+          TODAY=$(date +%Y-%m-%d)
           echo "Date: $TODAY, Random: $RANDOM_NUM"
           echo "{\"date\":\"$TODAY\",\"random\":$RANDOM_NUM}" > random.json
 
@@ -27,5 +28,5 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git add random.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "更新随机数: $(date -u +%Y-%m-%d)"
+          git diff --quiet && git diff --staged --quiet || git commit -m "更新随机数: $(TZ='Asia/Shanghai' date +%Y-%m-%d)"
           git push
